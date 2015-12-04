@@ -1,4 +1,4 @@
-var Home = React.createClass({
+var NavBar = React.createClass({
   getInitialState: function(){
     return {};
   },
