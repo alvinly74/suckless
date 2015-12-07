@@ -7,17 +7,19 @@ ApiUtil = {
       method: "get",
       success: function(currentGame){
         console.log("Found Game");
+        console.log(currentGame);
+        debugger;
         ApiUtil.handleCurrentGame(currentGame);
+        ApiActions.updateUserStore(currentGame.participants);
       },
       error: function(testError){
         console.log('Did not Find Game/user');
-        debugger
+
       }
     });
   },
   handleCurrentGame: function(currentGame){
-    if (currentGame == 'problem'){
-      alert("user not in a game");
-    }
-  }
+
+  },
+
 };

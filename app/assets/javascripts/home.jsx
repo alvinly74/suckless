@@ -17,7 +17,7 @@ $(function () {
 
   var routes = (
     <Route path="/" component={App}>
-      <Route path="result" component="placeholder"></Route>
+      <Route path="search" component={SearchResult}></Route>
     </Route>
   );
 
