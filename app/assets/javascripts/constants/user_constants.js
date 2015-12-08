@@ -1,3 +1,3 @@
 var UserConstants = {
   USER_STORE_UPDATE: "UPDATEUSERSTOREWITHNEWFOLKS"
-}
+};

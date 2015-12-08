@@ -4,5 +4,12 @@ var ApiActions = {
       actionType:UserConstants.USER_STORE_UPDATE,
       users: users
     });
+  },
+  updateChamps: function(champs){
+
+  },
+
+  updateItems: function(items){
+
   }
 };

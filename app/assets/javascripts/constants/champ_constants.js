@@ -1,0 +1,3 @@
+var ChampConstants = {
+  CHAMP_STORE_UPDATE: "CHAMPSTOREUPDATE"
+};

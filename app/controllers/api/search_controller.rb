@@ -13,4 +13,16 @@ class Api::SearchController < ApplicationController
     end
   end
 
+  def champs
+    @champs = Net::HTTP.get(URI.parse("https://global.api.pvp.net/api/lol/static-data/na/v1.2/champion?champData=all&api_key=6482fb35-7b68-4792-8603-6aa61b8d2076"))
+    champ_object = JSON.parse(@champs.gsub('=>', ':'))
+    render json: champ_object['keys']
+  end
+
+  def items
+    @items = Net::HTTP.get(URI.parse("https://global.api.pvp.net/api/lol/static-data/na/v1.2/item?api_key=6482fb35-7b68-4792-8603-6aa61b8d2076"))
+    item_object = JSON.parse(@items.gsub('=>', ':'))
+    render json: item_object['data']
+  end
+
 end

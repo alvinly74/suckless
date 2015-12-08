@@ -1,5 +1,5 @@
 var testUserId = '510537';
-ApiUtil = {
+var ApiUtil = {
   searchUser: function(username){
     $.ajax({
       url: "api/search/username",
@@ -8,18 +8,37 @@ ApiUtil = {
       success: function(currentGame){
         console.log("Found Game");
         console.log(currentGame);
-        debugger;
-        ApiUtil.handleCurrentGame(currentGame);
         ApiActions.updateUserStore(currentGame.participants);
       },
       error: function(testError){
         console.log('Did not Find Game/user');
-
       }
     });
   },
-  handleCurrentGame: function(currentGame){
-
+  grabChamps: function(){
+    $.ajax({
+      url: "api/search/champs",
+      method: "get",
+      success: function(champs){
+        console.log("Found Champs");
+        ApiActions.updateChamps(champs);
+      },
+      error: function(testError){
+        console.log('Did not Find Champs');
+      }
+    });
   },
-
+  grabItems: function(){
+    $.ajax({
+      url: "api/search/items",
+      method: "get",
+      success: function(items){
+        console.log("Found Items");
+        ApiActions.updateItems(items);
+      },
+      error: function(testError){
+        console.log('Did not Find Items');
+      }
+    });
+  }
 };

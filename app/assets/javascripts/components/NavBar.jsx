@@ -3,7 +3,8 @@ var NavBar = React.createClass({
     return {};
   },
   componentDidMount: function(){
-
+    ApiUtil.grabChamps();
+    ApiUtil.grabItems();
   },
   _onChange: function(){
 
