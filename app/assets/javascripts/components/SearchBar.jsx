@@ -15,7 +15,7 @@ var SearchBar = React.createClass({
   _goSearch:function(e){
   e.preventDefault();
   this.history.pushState(null,"search");
-  ApiUtil.searchUser(this.state.input.toLowerCase());
+  ApiUtil.searchUser(this.state.input.toLowerCase().replace(/\s/g, ''));
   // ApiUtil.historyUser(this.state.input.toLowerCase());
   this.setState({input: ""});
 },
