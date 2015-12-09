@@ -20,6 +20,18 @@
       return _users;
     },
 
+    showUser:function(id){
+      return _users[id];
+    },
+
+    addUserChangeListener:function(callback){
+      this.on(USER_CHANGE, callback);
+    },
+
+    removeUserChangeListener: function(callback){
+      this.removeListener(USER_CHANGE,callback);
+    },
+
     dispatcherID: AppDispatcher.register(function(payload){
 
       switch (payload.actionType){

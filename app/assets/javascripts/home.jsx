@@ -18,6 +18,7 @@ $(function () {
   var routes = (
     <Route path="/" component={App}>
       <Route path="search" component={SearchResult}></Route>
+      <Route path="history" component={UserHistory}></Route>
     </Route>
   );
 

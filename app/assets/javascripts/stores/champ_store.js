@@ -8,24 +8,28 @@
     _champs = {};
   };
 
-  var updateChampStore = function(users){
-    users.forEach(function(user){
-      _users[user.summonerId] = user;
+  var updateChampStore = function(champs){
+    Object.keys(champs).forEach(function(champ){
+      _champs[champ.id] = champ;
     });
   };
 
   var ChampStore = root.ChampStore = $.extend({}, EventEmitter.prototype, {
 
-    showUsers: function(){
-      return _users;
+    showAll: function(){
+      return _champs;
+    },
+    
+    displayChampion: function(champId){
+      return _champs[champId];
     },
 
     dispatcherID: AppDispatcher.register(function(payload){
 
       switch (payload.actionType){
-        case ChampConstants.CHAMP_STORE_UPDATE:
+        case StaticConstants.CHAMP_STORE_UPDATE:
           clearStore();
-          updateChampStore(payload.users);
+          updateChampStore(payload.champs);
           ChampStore.emit(CHAMPCHANGE);
           break;
 

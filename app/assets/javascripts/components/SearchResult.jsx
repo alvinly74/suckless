@@ -1,27 +1,25 @@
 var SearchResult = React.createClass({
   mixins: [ReactRouter.History],
   getInitialState: function(){
-    return {input:""};
+    return {users:Object.keys(UserStore.showUsers()).map(function(user){return UserStore.showUser(user);})};
   },
   componentDidMount:function(){
-
+    UserStore.addUserChangeListener(this._onChange);
   },
+
   _onChange:function(){
+    this.setState({users: Object.keys(UserStore.showUsers()).map(function(user){return UserStore.showUser(user);})});
+    console.log(this.state.users);
+  },
 
+  usernames: function(){
+    return this.state.users.map(function(user){ return user.summonerName;});
   },
-  _handleTyping:function(e){
-    this.setState({input:e.target.value});
-  },
-  _goSearch:function(e){
-  e.preventDefault();
-  // this.history.pushState(null,"search");
-  ApiUtil.searchUser(this.state.input.toLowerCase());
-  this.setState({input: ""});
-},
+
   render: function(){
     return (
       <div className="SearchResult">
-        <a>{UserStore.showUsers()}</a>
+        <a>{this.usernames()}</a>
       </div>
     );
   }

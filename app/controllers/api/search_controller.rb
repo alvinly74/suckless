@@ -9,8 +9,16 @@ class Api::SearchController < ApplicationController
       game = JSON.parse(spectator_game.gsub('=>', ':'))
       render json: game
     else
-      render json: "error"
+      render json: "error not in game"
     end
+  end
+
+  def history
+    @username = params[:username]
+    result = Net::HTTP.get(URI.parse("https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/" + @username + "?api_key=6482fb35-7b68-4792-8603-6aa61b8d2076"))
+    user_id = JSON.parse(result.gsub('=>', ':'))[@username]["id"]
+    history = Net::HTTP.get(URI.parse('https://na.api.pvp.net/api/lol/na/v1.3/game/by-summoner/' + user_id.to_s + '/recent?api_key=6482fb35-7b68-4792-8603-6aa61b8d2076'))
+    render json: game = JSON.parse(history.gsub('=>', ':'))
   end
 
   def champs

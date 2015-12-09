@@ -11,6 +11,23 @@ var ApiUtil = {
         ApiActions.updateUserStore(currentGame.participants);
       },
       error: function(testError){
+        alert("might not be in game");
+        console.log('Did not Find Game/user');
+      }
+    });
+  },
+
+  historyUser: function(username){
+    $.ajax({
+      url: "api/search/history-username",
+      data: {username: username},
+      method: "get",
+      success: function(currentGame){
+        console.log("Found Game");
+        console.log(currentGame);
+        // ApiActions.updateUserStore(currentGame.participants);
+      },
+      error: function(testError){
         console.log('Did not Find Game/user');
       }
     });
