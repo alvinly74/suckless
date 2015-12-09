@@ -5,8 +5,20 @@ class Api::SearchController < ApplicationController
     result = Net::HTTP.get(URI.parse("https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/" + @username + "?api_key=6482fb35-7b68-4792-8603-6aa61b8d2076"))
     user_id = JSON.parse(result.gsub('=>', ':'))[@username]["id"]
     spectator_game = Net::HTTP.get(URI.parse("https://na.api.pvp.net/observer-mode/rest/consumer/getSpectatorGameInfo/NA1/" + user_id.to_s + "?api_key=6482fb35-7b68-4792-8603-6aa61b8d2076"))
-    if spectator_game[0] == "{"
+    if spectator_game[0] == "{" # verify that user is in a game
       game = JSON.parse(spectator_game.gsub('=>', ':'))
+      summoner_ids = game['participants'].map{|el| el['summonerId']}.join(",")
+      summoner_ranks = Net::HTTP.get(URI.parse("https://na.api.pvp.net/api/lol/na/v2.5/league/by-summoner/" + summoner_ids + '/entry' + "?api_key=6482fb35-7b68-4792-8603-6aa61b8d2076"))
+      ranks_hash = JSON.parse(summoner_ranks.gsub('=>', ':'))
+      game['participants'].each do |player|
+          rank = {}
+        if ranks_hash[player['summonerId'].to_s][0]['queue'] == 'RANKED_SOLO_5x5'
+          rank['tier'] = ranks_hash[player['summonerId'].to_s][0]['tier']
+          rank['division'] = ranks_hash[player['summonerId'].to_s][0]['entries'][0]['division']
+          rank['points'] = ranks_hash[player['summonerId'].to_s][0]['entries'][0]['leaguePoints']
+        end
+        player['rank'] = rank;
+      end
       render json: game
     else
       render json: "error not in game"

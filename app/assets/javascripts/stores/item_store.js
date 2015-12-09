@@ -19,7 +19,7 @@
     showAll: function(){
       return _items;
     },
-    
+
     displayChampion: function(itemId){
       return _items[itemId];
     },

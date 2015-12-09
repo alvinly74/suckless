@@ -8,11 +8,11 @@ var ApiUtil = {
       success: function(currentGame){
         console.log("Found Game");
         console.log(currentGame);
-        debugger;
         ApiActions.updateUserStore(currentGame.participants);
       },
       error: function(testError){
         alert("might not be in game");
+        console.log(testError);
         console.log('Did not Find Game/user');
       }
     });
