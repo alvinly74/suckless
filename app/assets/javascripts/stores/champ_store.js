@@ -9,9 +9,7 @@
   };
 
   var updateChampStore = function(champs){
-    Object.keys(champs).forEach(function(champ){
-      _champs[champ.id] = champ;
-    });
+    _champs = champs;
   };
 
   var ChampStore = root.ChampStore = $.extend({}, EventEmitter.prototype, {
@@ -19,7 +17,7 @@
     showAll: function(){
       return _champs;
     },
-    
+
     displayChampion: function(champId){
       return _champs[champId];
     },

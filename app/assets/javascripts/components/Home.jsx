@@ -14,6 +14,5 @@ var Home = React.createClass({
   render: function(){
     return <SearchBar/>;
 
-
   }
 });

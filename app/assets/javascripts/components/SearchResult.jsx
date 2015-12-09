@@ -9,17 +9,18 @@ var SearchResult = React.createClass({
 
   _onChange:function(){
     this.setState({users: Object.keys(UserStore.showUsers()).map(function(user){return UserStore.showUser(user);})});
-    console.log(this.state.users);
   },
 
-  usernames: function(){
-    return this.state.users.map(function(user){ return user.summonerName;});
+  users: function(){
+    return this.state.users.map(function(user){
+        return <SummonerItem summoner={user}/>;
+      });
   },
 
   render: function(){
     return (
       <div className="SearchResult">
-        <a>{this.usernames()}</a>
+        <a>{this.users()}</a>
       </div>
     );
   }
