@@ -9,8 +9,8 @@
   };
 
   var updateUserStore = function(users){
-    users.forEach(function(user){
-      _users[user.summonerId] = user;
+    Object.keys(users).forEach(function(userId){
+      _users[userId] = users[userId];
     });
   };
 
