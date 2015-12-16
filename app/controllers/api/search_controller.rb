@@ -17,23 +17,23 @@ class Api::SearchController < ApplicationController
     end
   end
 
-  # def history
-  #   @username = params[:username]
-  #   result = Net::HTTP.get(URI.parse("https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/" + @username + "?api_key=6482fb35-7b68-4792-8603-6aa61b8d2076"))
-  #   user_id = JSON.parse(result.gsub('=>', ':'))[@username]["id"]
-  #   history = Net::HTTP.get(URI.parse('https://na.api.pvp.net/api/lol/na/v1.3/game/by-summoner/' + user_id.to_s + '/recent?api_key=6482fb35-7b68-4792-8603-6aa61b8d2076'))
-  #   render json: game = JSON.parse(history.gsub('=>', ':'))
-  # end
+  def history
+    @username = params[:username]
+    result = Net::HTTP.get(URI.parse("https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/" + @username + "?api_key=6482fb35-7b68-4792-8603-6aa61b8d2076"))
+    user_id = JSON.parse(result.gsub('=>', ':'))[@username]["id"]
+    history = Net::HTTP.get(URI.parse('https://na.api.pvp.net/api/lol/na/v1.3/game/by-summoner/' + user_id.to_s + '/recent?api_key=6482fb35-7b68-4792-8603-6aa61b8d2076'))
+    render json: game = JSON.parse(history.gsub('=>', ':'))
+  end
 
   def champs
-    @champs = Net::HTTP.get(URI.parse("https://global.api.pvp.net/api/lol/static-data/na/v1.2/champion?champData=all&api_key=6482fb35-7b68-4792-8603-6aa61b8d2076"))
-    champ_object = JSON.parse(@champs.gsub('=>', ':'))
+    champs = Net::HTTP.get(URI.parse("https://global.api.pvp.net/api/lol/static-data/na/v1.2/champion?champData=all&api_key=6482fb35-7b68-4792-8603-6aa61b8d2076"))
+    champ_object = convert_json(champs)
     render json: champ_object['keys']
   end
 
   def items
-    @items = Net::HTTP.get(URI.parse("https://global.api.pvp.net/api/lol/static-data/na/v1.2/item?api_key=6482fb35-7b68-4792-8603-6aa61b8d2076"))
-    item_object = JSON.parse(@items.gsub('=>', ':'))
+    items = Net::HTTP.get(URI.parse("https://global.api.pvp.net/api/lol/static-data/na/v1.2/item?api_key=6482fb35-7b68-4792-8603-6aa61b8d2076"))
+    item_object = convert_json(items)
     render json: item_object['data']
   end
 
