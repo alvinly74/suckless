@@ -11,6 +11,7 @@ class Api::SearchController < ApplicationController
       fill_ranks(ranks_hash, game)
       history_hash = obtain_history(summoner_ids.split(","))
       fill_history(history_hash, game)
+      fill_stats(game['participants'])
       render json: game
     else
       render json: "error not in game"
@@ -18,10 +19,8 @@ class Api::SearchController < ApplicationController
   end
 
   def history
-    @username = params[:username]
-    result = Net::HTTP.get(URI.parse("https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/" + @username + "?api_key=6482fb35-7b68-4792-8603-6aa61b8d2076"))
-    user_id = JSON.parse(result.gsub('=>', ':'))[@username]["id"]
-    history = Net::HTTP.get(URI.parse('https://na.api.pvp.net/api/lol/na/v1.3/game/by-summoner/' + user_id.to_s + '/recent?api_key=6482fb35-7b68-4792-8603-6aa61b8d2076'))
+    user_id = find_user_id(params[:username])
+    history = Net::HTTP.get(URI.parse('https://na.api.pvp.net/api/lol/na/v1.3/game/by-summoner/' + user_id + '/recent?api_key=6482fb35-7b68-4792-8603-6aa61b8d2076'))
     render json: game = JSON.parse(history.gsub('=>', ':'))
   end
 
@@ -102,4 +101,58 @@ def fill_history(history_hash, game)
   history_hash.keys.each do |summoner_id|
     game['participants'][summoner_id]['history'] = history_hash[summoner_id]
   end
+end
+
+def fill_stats(participants)
+  p "fill stats placeholder"
+end
+
+def find_average_stat(player_history,stat)
+  #stat can be 'championsKilled', 'minionsKilled', 'win', 'numDeaths', 'assists', 'wardPlaced'
+  num_valid_games = 0
+  num_stat = 0
+  player_history.each do |game|
+    if game['gameMode'] == 'CLASSIC' && game['gameType'] == 'MATCHED_GAME'
+      num_valid_games +=1
+      case stat
+      when 'win'
+        num_stat += 1 if game['stats']['win']
+      when 'championsKilled', 'minionsKilled', 'numDeaths', 'assist', 'wardPlaced'
+        num_stat += game['stats'][stat]
+      end
+    end
+  end
+  return num_stat / num_valid_games
+end
+
+def find_usual_position_and_role(player_history)
+  # 'playerRole' 1 = duo, 2 = support, 3 = carry, 4 = solo
+  # 'playerPosition' 1 = top, 2 = middle, 3 = jungle, 4 = bot
+  role = Hash.new(0)
+  position = Hash.new(0)
+  player_history.each do |game|
+    role[game['stats']['playerRole']] +=1
+    position['stats']['playerPosition'] +=1
+  end
+
+  role_freq = [[0,0]]
+  role.keys.each do | key|
+    case
+    when role[key] > role_freq[1]
+      role_freq = [[key, role[key]]]
+    when role[key] == role_freq[1]
+      role_freq << [key, role[key]]
+    end
+  end
+  position_freq = [[0,0]]
+  position.keys.each do | key|
+    case
+    when position[key] > position_freq[1]
+      position_freq = [[key, position[key]]]
+    when position[key] == position_freq[1]
+      position_freq << [key, position[key]]
+    end
+  end
+
+  return {role: role_freq, position: position_freq}
 end
