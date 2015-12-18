@@ -104,7 +104,11 @@ def fill_history(history_hash, game)
 end
 
 def fill_stats(participants)
-  p "fill stats placeholder"
+  participants.each do |id, player|
+    debugger;
+    player['championKilled'] = find_average_stat(player['history'],'championKilled')
+  end
+  debugger;
 end
 
 def find_average_stat(player_history,stat)
