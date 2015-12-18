@@ -105,10 +105,8 @@ end
 
 def fill_stats(participants)
   participants.each do |id, player|
-    debugger;
-    player['championKilled'] = find_average_stat(player['history'],'championKilled')
+    player['championsKilled'] = find_average_stat(player['history'],'championsKilled')
   end
-  debugger;
 end
 
 def find_average_stat(player_history,stat)
@@ -122,11 +120,17 @@ def find_average_stat(player_history,stat)
       when 'win'
         num_stat += 1 if game['stats']['win']
       when 'championsKilled', 'minionsKilled', 'numDeaths', 'assist', 'wardPlaced'
-        num_stat += game['stats'][stat]
+        num_stat += game['stats'][stat].to_f
       end
     end
   end
-  return num_stat / num_valid_games
+  puts "valid games = #{num_valid_games}"
+  if num_valid_games >= 1
+    puts "Stat is #{num_stat.to_f / num_valid_games.to_f}"
+    return num_stat.to_f / num_valid_games.to_f
+  else
+    return 0
+  end
 end
 
 def find_usual_position_and_role(player_history)
