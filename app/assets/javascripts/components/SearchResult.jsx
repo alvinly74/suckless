@@ -1,18 +1,20 @@
 var SearchResult = React.createClass({
   mixins: [ReactRouter.History],
   getInitialState: function(){
-    return {users:Object.keys(UserStore.showUsers()).map(function(user){return UserStore.showUser(user);})};
+    return {users:UserStore.showUsers()};
   },
+
   componentDidMount:function(){
     UserStore.addUserChangeListener(this._onChange);
   },
 
   _onChange:function(){
-    this.setState({users: Object.keys(UserStore.showUsers()).map(function(user){return UserStore.showUser(user);})});
+    this.setState({users:UserStore.showUsers()});
   },
 
-  users: function(){
-    return this.state.users.map(function(user){
+  team: function(color){
+    users = Object.keys(UserStore.showTeam(color)).map(function(userId){return UserStore.showUser(userId, color);});
+    return users.map(function(user){
         return <SummonerItem summoner={user}/>;
       });
   },
@@ -20,7 +22,8 @@ var SearchResult = React.createClass({
   render: function(){
     return (
       <div className="SearchResult">
-        <a>{this.users()}</a>
+        <a>{this.team('blue')}</a>
+        <a>{this.team('red')}</a>
       </div>
     );
   }

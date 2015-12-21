@@ -12,6 +12,7 @@ class Api::SearchController < ApplicationController
       history_hash = obtain_history(summoner_ids.split(","))
       fill_history!(history_hash, game)
       fill_stats!(game['participants'])
+      efficientize_game!(game)
       render json: game
     else
       render json: "error not in game"
@@ -106,16 +107,15 @@ end
 def fill_stats!(participants)
   participants.each do |id, player|
     player['validGames'] = find_number_valid_games(player['history'])
-    role_and_position = find_usual_position_and_role(player['history'])
-    player['championsKilled'] = find_average_stat(player['history'],'championsKilled')
-    player['minionsKilled'] = find_average_stat(player['history'],'minionsKilled')
-    player['win'] = find_average_stat(player['history'],'win')
-    player['numDeaths'] = find_average_stat(player['history'],'numDeaths')
-    player['assists'] = find_average_stat(player['history'],'assists')
-    player['wardPlaced'] = find_average_stat(player['history'],'wardPlaced')
+    role_and_position = find_usual_position_and_role(player['history'], player['validGames'])
+    player['championsKilled'] = find_average_stat(player['history'],'championsKilled', player['validGames'])
+    player['minionsKilled'] = find_average_stat(player['history'],'minionsKilled', player['validGames'])
+    player['win'] = find_average_stat(player['history'],'win', player['validGames'])
+    player['numDeaths'] = find_average_stat(player['history'],'numDeaths', player['validGames'])
+    player['assists'] = find_average_stat(player['history'],'assists', player['validGames'])
+    player['wardPlaced'] = find_average_stat(player['history'],'wardPlaced', player['validGames'])
     player['commonRole'] = role_and_position['role']
     player['commonPosition'] = role_and_position['position']
-    debugger;
   end
 end
 
@@ -129,29 +129,25 @@ def find_number_valid_games(history)
   valid_games
 end
 
-def find_average_stat(player_history,stat)
+def find_average_stat(player_history, stat, valid_games)
   #stat can be 'championsKilled', 'minionsKilled', 'win', 'numDeaths', 'assists', 'wardPlaced'
-  num_valid_games = 0
   num_stat = 0
-  player_history.each do |game|
-    if valid_game?(game)
-      num_valid_games +=1
+  valid_games.each do |game_idx|
       case stat
       when 'win'
-        num_stat += 1 if game['stats']['win']
+        num_stat += 1 if player_history[game_idx]['stats']['win']
       when 'championsKilled', 'minionsKilled', 'numDeaths', 'assists', 'wardPlaced'
-        num_stat += game['stats'][stat].to_f
+        num_stat += player_history[game_idx]['stats'][stat].to_f
       end
-    end
   end
-  if num_valid_games >= 1
-    return num_stat.to_f / num_valid_games.to_f
+  if valid_games.length >= 1
+    return (num_stat.to_f / valid_games.length).round(2)
   else
     return 0
   end
 end
 
-def find_usual_position_and_role(player_history)
+def find_usual_position_and_role(player_history, valid_games)
   # 'playerRole' 1 = duo, 2 = support, 3 = carry, 4 = solo
   # 'playerPosition' 1 = top, 2 = middle, 3 = jungle, 4 = bot
   role = Hash.new(0)
@@ -183,6 +179,21 @@ def find_usual_position_and_role(player_history)
   end
 
   return {'role' => role_freq, 'position' => position_freq}
+end
+
+def efficientize_game!(game)
+  teams = {red: {}, blue: {}}
+  game['participants'].each do |key, player|
+    player.delete('history')
+    player.delete('validGames')
+    player.delete('bot')
+    if player['teamId'] == 100
+      teams[:blue][key] = player
+    else
+      teams[:red][key] = player
+    end
+  end
+  game['participants'] = teams
 end
 
 def valid_game?(game)

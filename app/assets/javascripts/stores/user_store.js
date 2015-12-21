@@ -1,16 +1,16 @@
 (function(root) {
   'use strict';
 
-  var _users = {};
+  var _users = { blue: {}, red: {} };
   var USER_CHANGE = "USERCHANGED";
 
   var clearStore = function(){
-    _users = {};
+    _users = { blue: {}, red: {} };
   };
 
-  var updateUserStore = function(users){
+  var updateUserStore = function(users, teamColor){
     Object.keys(users).forEach(function(userId){
-      _users[userId] = users[userId];
+      _users[teamColor][userId] = users[userId];
     });
   };
 
@@ -20,8 +20,12 @@
       return _users;
     },
 
-    showUser:function(id){
-      return _users[id];
+    showTeam: function(color){
+      return _users[color];
+    },
+
+    showUser:function(id, teamColor){
+      return _users[teamColor][id];
     },
 
     addUserChangeListener:function(callback){
@@ -37,7 +41,8 @@
       switch (payload.actionType){
         case UserConstants.USER_STORE_UPDATE:
           clearStore();
-          updateUserStore(payload.users);
+          updateUserStore(payload.users.red, 'red');
+          updateUserStore(payload.users.blue, 'blue');
           UserStore.emit(USER_CHANGE);
           break;
 
