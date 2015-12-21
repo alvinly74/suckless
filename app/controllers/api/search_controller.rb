@@ -6,12 +6,12 @@ class Api::SearchController < ApplicationController
     if in_game?(game_string)
       game = convert_json(game_string)
       summoner_ids = obtain_summoner_ids(game)
-      convert_participants_to_hash(game) #efficiency for rank allocation
+      convert_participants_to_hash!(game) #efficiency for rank allocation
       ranks_hash = obtain_summoner_ranks(summoner_ids)
-      fill_ranks(ranks_hash, game)
+      fill_ranks!(ranks_hash, game)
       history_hash = obtain_history(summoner_ids.split(","))
-      fill_history(history_hash, game)
-      fill_stats(game['participants'])
+      fill_history!(history_hash, game)
+      fill_stats!(game['participants'])
       render json: game
     else
       render json: "error not in game"
@@ -61,7 +61,7 @@ def obtain_summoner_ids(game)
   game['participants'].map{|el| el['summonerId']}.join(",")
 end
 
-def convert_participants_to_hash(game)
+def convert_participants_to_hash!(game)
   build_hash = {}
   game['participants'].each do |player|
     build_hash[player['summonerId'].to_s] = player
@@ -73,7 +73,7 @@ def obtain_summoner_ranks(summoner_ids)
   convert_json(Net::HTTP.get(URI.parse("https://na.api.pvp.net/api/lol/na/v2.5/league/by-summoner/" + summoner_ids + '/entry' + "?api_key=6482fb35-7b68-4792-8603-6aa61b8d2076")))
 end
 
-def fill_ranks(ranks_hash, game)
+def fill_ranks!(ranks_hash, game)
   ranks_hash.keys.each do |summoner_id|
     rank = {}
     if ranks_hash[summoner_id][0]['queue'] == 'RANKED_SOLO_5x5'
@@ -97,16 +97,36 @@ def obtain_history(summoner_ids)
   history_hash
 end
 
-def fill_history(history_hash, game)
+def fill_history!(history_hash, game)
   history_hash.keys.each do |summoner_id|
     game['participants'][summoner_id]['history'] = history_hash[summoner_id]
   end
 end
 
-def fill_stats(participants)
+def fill_stats!(participants)
   participants.each do |id, player|
+    player['validGames'] = find_number_valid_games(player['history'])
+    role_and_position = find_usual_position_and_role(player['history'])
     player['championsKilled'] = find_average_stat(player['history'],'championsKilled')
+    player['minionsKilled'] = find_average_stat(player['history'],'minionsKilled')
+    player['win'] = find_average_stat(player['history'],'win')
+    player['numDeaths'] = find_average_stat(player['history'],'numDeaths')
+    player['assists'] = find_average_stat(player['history'],'assists')
+    player['wardPlaced'] = find_average_stat(player['history'],'wardPlaced')
+    player['commonRole'] = role_and_position['role']
+    player['commonPosition'] = role_and_position['position']
+    debugger;
   end
+end
+
+def find_number_valid_games(history)
+  valid_games = []
+  history.each_with_index do |game, idx|
+    if valid_game?(game)
+      valid_games << idx
+    end
+  end
+  valid_games
 end
 
 def find_average_stat(player_history,stat)
@@ -114,19 +134,17 @@ def find_average_stat(player_history,stat)
   num_valid_games = 0
   num_stat = 0
   player_history.each do |game|
-    if game['gameMode'] == 'CLASSIC' && game['gameType'] == 'MATCHED_GAME'
+    if valid_game?(game)
       num_valid_games +=1
       case stat
       when 'win'
         num_stat += 1 if game['stats']['win']
-      when 'championsKilled', 'minionsKilled', 'numDeaths', 'assist', 'wardPlaced'
+      when 'championsKilled', 'minionsKilled', 'numDeaths', 'assists', 'wardPlaced'
         num_stat += game['stats'][stat].to_f
       end
     end
   end
-  puts "valid games = #{num_valid_games}"
   if num_valid_games >= 1
-    puts "Stat is #{num_stat.to_f / num_valid_games.to_f}"
     return num_stat.to_f / num_valid_games.to_f
   else
     return 0
@@ -139,28 +157,34 @@ def find_usual_position_and_role(player_history)
   role = Hash.new(0)
   position = Hash.new(0)
   player_history.each do |game|
-    role[game['stats']['playerRole']] +=1
-    position['stats']['playerPosition'] +=1
+    if valid_game?(game)
+      role[game['stats']['playerRole']] +=1
+      position[game['stats']['playerPosition']] +=1
+    end
   end
 
-  role_freq = [[0,0]]
+  role_freq = [[0,0]] # [role, frequency]
   role.keys.each do | key|
     case
-    when role[key] > role_freq[1]
+    when role[key] > role_freq[0][1]
       role_freq = [[key, role[key]]]
-    when role[key] == role_freq[1]
-      role_freq << [key, role[key]]
+    when role[key] == role_freq[0][1]
+      role_freq << [key, role[key]] # in case of tie
     end
   end
   position_freq = [[0,0]]
   position.keys.each do | key|
     case
-    when position[key] > position_freq[1]
+    when position[key] > position_freq[0][1]
       position_freq = [[key, position[key]]]
-    when position[key] == position_freq[1]
+    when position[key] == position_freq[0][1]
       position_freq << [key, position[key]]
     end
   end
 
-  return {role: role_freq, position: position_freq}
+  return {'role' => role_freq, 'position' => position_freq}
+end
+
+def valid_game?(game)
+  (game['gameMode'] == 'CLASSIC' && game['gameType'] == 'MATCHED_GAME')
 end
