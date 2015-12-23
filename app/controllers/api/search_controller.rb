@@ -89,8 +89,7 @@ end
 def obtain_history(summoner_ids)
   history_hash = {}
   summoner_ids.each do |id|
-    sleep(1.25)
-    result = Net::HTTP.get(URI.parse('https://na.api.pvp.net/api/lol/na/v1.3/game/by-summoner/' + id + '/recent?api_key=6482fb35-7b68-4792-8603-6aa61b8d2076'))
+    result = Net::HTTP.get(URI.parse('https://na.api.pvp.net/api/lol/na/v1.3/game/by-summoner/' + id + '/recent?api_key=23e70b29-8f40-45dd-9758-b732adfd8b09'))
     result = convert_json(result)
     history_hash[result['summonerId'].to_s] = result['games']
 
@@ -159,33 +158,32 @@ def find_usual_position_and_role(player_history, valid_games)
     end
   end
 
-  role_freq = [[0,0]] # [role, frequency]
+  common_role = [0] # in case of tie, push
   role.keys.each do | key|
     case
-    when role[key] > role_freq[0][1]
-      role_freq = [[key, role[key]]]
-    when role[key] == role_freq[0][1]
-      role_freq << [key, role[key]] # in case of tie
+    when role[key] > role[common_role[0]]
+      common_role = [key]
+    when role[key] == role[common_role[0]]
+      common_role << key # in case of tie
     end
   end
-  position_freq = [[0,0]]
+  common_position = []
   position.keys.each do | key|
     case
-    when position[key] > position_freq[0][1]
-      position_freq = [[key, position[key]]]
-    when position[key] == position_freq[0][1]
-      position_freq << [key, position[key]]
+    when position[key] > position[common_position[0]]
+      common_position = [[key, position[key]]]
+    when position[key] ==  position[common_position[0]]
+      common_position << key
     end
   end
-
-  return {'role' => role_freq, 'position' => position_freq}
+  return {'role' => common_role, 'position' => common_position}
 end
 
 def efficientize_game!(game)
   teams = {red: {}, blue: {}}
   game['participants'].each do |key, player|
     player.delete('history')
-    player.delete('validGames')
+    player['validGames'] = player['validGames'].length
     player.delete('bot')
     if player['teamId'] == 100
       teams[:blue][key] = player

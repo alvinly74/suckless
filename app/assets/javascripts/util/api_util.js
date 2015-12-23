@@ -39,7 +39,6 @@ var ApiUtil = {
       method: "get",
       success: function(champs){
         console.log("Found Champs");
-        console.log(champs);
         ApiActions.updateChamps(champs);
       },
       error: function(testError){
@@ -53,7 +52,6 @@ var ApiUtil = {
       method: "get",
       success: function(items){
         console.log("Found Items");
-        console.log(items);
         ApiActions.updateItems(items);
       },
       error: function(testError){

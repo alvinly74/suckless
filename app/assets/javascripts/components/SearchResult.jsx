@@ -20,10 +20,11 @@ var SearchResult = React.createClass({
   },
 
   render: function(){
+
     return (
       <div className="SearchResult">
-        <a>{this.team('blue')}</a>
-        <a>{this.team('red')}</a>
+        <a className="blau team">{this.team('blue')}</a>
+        <a className="rot team">{this.team('red')}</a>
       </div>
     );
   }
